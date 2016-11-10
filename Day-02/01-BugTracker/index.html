@@ -37,9 +37,9 @@
 		/*
 			Use Cases
 			========
-			1. Add a new bug
-			2. List the bugs
-			3. Toggle the 'closed' status of a bug
+			1. Add a new bug 										- done
+			2. List the bugs 										- done
+			3. Toggle the 'closed' status of a bug 					- done
 			4. Remove closed bugs
 			5. Display stats (# of closed bugs / total # of bugs)
 			6. Search for bugs
@@ -51,15 +51,36 @@
 			12. Enable bug detail access through unique urls
 		*/
 	</script>
+	<script src="angular.js"></script>
+	<script>
+		var bugTrackerApp = angular.module("bugTrackerApp", ["ng"]);
+
+		bugTrackerApp.controller("bugsController", function($scope){
+			$scope.bugs = [];
+			
+			$scope.addNew = function(newBugName){
+				var newBug = {
+					name : newBugName,
+					isClosed : false
+				}
+				$scope.bugs.push(newBug);
+			};
+
+			$scope.toggle = function(bug){
+				bug.isClosed = !bug.isClosed;
+			}
+		});
+
+	</script>
 </head>
-<body>
+<body ng-app="bugTrackerApp">
 	<h1>Bug Tracker</h1>
 	<hr>
-	<div class="content">
+	<div class="content" ng-controller="bugsController">
 		<section class="stats">
 			<spand class="closed">2</spand>
 			<span> / </span>
-			<span>5</span>
+			<span>{{bugs.length}}</span>
 		</section>
 		<section class="search">
 			<label for="">Search :</label>
@@ -76,20 +97,17 @@
 		</section>
 		<section class="edit">
 			<label for="">Bug :</label>
-			<input type="text" name="" id="">
-			<input type="button" value="Add New">
+			<input type="text" ng-model="newBug">
+			<input type="button" value="Add New" ng-click="addNew(newBug)">
 		</section>
 		<section class="list">
 			<ol>
-				<li>
-					<span class="bugname">This is a bug - 1</span>
+				<li ng-repeat="bug in bugs" ng-click="toggle(bug)" ng-class="{closed : bug.isClosed}">
+					<span class="bugname">{{bug.name}}</span>
 					<div class="datetime"></div>
 				</li>
 
-				<li>
-					<span class="bugname closed">This is a bug - 2</span>
-					<div class="datetime"></div>
-				</li>
+				
 			</ol>
 			<input type="button" value="Remove Closed">
 		</section>
