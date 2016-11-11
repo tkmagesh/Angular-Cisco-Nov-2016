@@ -46,6 +46,21 @@
 			7. Sort the bugs 										- done
 			8. Improve the bug display 								- done
 			9. Persist the bugs in the localStorage
+				window.localStorage
+				===================
+				* Key/value store
+				* Key has to be unique
+				* Value has to be a string
+				* Use Angular.toJson() and angular.fromJson() for searialisation and deserialisation respectively
+
+				API
+				---
+					- setItem(key, value)
+					- getItem(key) => value
+					- removeItem(key)
+					- key(index) => key at index
+					- clear()
+					- length
 			10. Display 'createdAt'
 			11. Persist the bugs in the server
 			12. Enable bug detail access through unique urls
@@ -82,11 +97,7 @@
 		
 
 		bugTrackerApp.controller("bugsController", function($scope, bugOperations){
-			$scope.bugs = [
-				bugOperations.createNew('Server communication failure'),
-				bugOperations.createNew('User actions not recognized'),
-				bugOperations.createNew('Data not saved'),
-			];
+			$scope.bugs = [];
 			
 			$scope.addNew = function(newBugName){
 				var newBug = bugOperations.createNew(newBugName);
