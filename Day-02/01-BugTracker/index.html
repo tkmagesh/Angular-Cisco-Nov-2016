@@ -45,7 +45,7 @@
 			6. Search for bugs 										- done
 			7. Sort the bugs 										- done
 			8. Improve the bug display 								- done
-			9. Persist the bugs in the localStorage
+			9. Persist the bugs in the localStorage 				- done
 				window.localStorage
 				===================
 				* Key/value store
@@ -78,14 +78,15 @@
 		
 
 		bugTrackerApp.factory('bugOperations', function (appDefaults){
-			var currentBugId = 0;
+			
 			return {
 				
-				createNew : function(bugName){
+				createNew : function(id, bugName){
 					return {
-						id : ++currentBugId,
+						id : id,
 						name : bugName || appDefaults.bugName,
-						isClosed : false
+						isClosed : false,
+						createdAt : new Date()
 					};
 				},
 				toggle : function(bug){
@@ -94,29 +95,96 @@
 			}
 		});
 
+		/*bugTrackerApp.factory('bugStorage', function(bugOperations){
+			var storage = window.localStorage;
+			var currentBugId = 0;
+			function getAllBugs(){
+				var result = [];
+				for(var i=0; i < storage.length; i++){
+					var bug = angular.fromJson(storage.getItem(storage.key(i)));
+					result.push(bug);
+					currentBugId = bug.id > currentBugId ? bug.id : currentBugId;
+				}
+				return result;
+			}
+			function addBug(bugName){
+				var newBug = bugOperations.createNew(++currentBugId, bugName);
+				saveBug(newBug);
+				return newBug;
+			}
+			function toggleBug(bug){
+				bugOperations.toggle(bug);
+				saveBug(bug);
+			}
+
+			function saveBug(bug){
+				storage.setItem(bug.id, angular.toJson(bug));
+			}
+
+			function removeBug(bug){
+				storage.removeItem(bug.id);
+			}
+			return {
+				getAll : getAllBugs,
+				add : addBug,
+				toggle : toggleBug,
+				remove : removeBug
+			}
+		})*/
+
+		bugTrackerApp.service('bugStorage', function(bugOperations){
+			var storage = window.localStorage;
+			var currentBugId = 0;
+			this.getAll = function getAllBugs(){
+				var result = [];
+				for(var i=0; i < storage.length; i++){
+					var bug = angular.fromJson(storage.getItem(storage.key(i)));
+					result.push(bug);
+					currentBugId = bug.id > currentBugId ? bug.id : currentBugId;
+				}
+				return result;
+			}
+			this.add = function addBug(bugName){
+				var newBug = bugOperations.createNew(++currentBugId, bugName);
+				saveBug(newBug);
+				return newBug;
+			}
+			this.toggle = function toggleBug(bug){
+				bugOperations.toggle(bug);
+				saveBug(bug);
+			}
+
+			function saveBug(bug){
+				storage.setItem(bug.id, angular.toJson(bug));
+			}
+
+			this.remove = function removeBug(bug){
+				storage.removeItem(bug.id);
+			}
+			
+		})
 		
 
-		bugTrackerApp.controller("bugsController", function($scope, bugOperations){
-			$scope.bugs = [];
+		bugTrackerApp.controller("bugsController", function($scope, bugStorage){
+			$scope.bugs = bugStorage.getAll();
 			
 			$scope.addNew = function(newBugName){
-				var newBug = bugOperations.createNew(newBugName);
+				var newBug = bugStorage.add(newBugName);
 				$scope.bugs.push(newBug);
 			};
 
 			$scope.toggle = function(bug){
-				bugOperations.toggle(bug);
+				bugStorage.toggle(bug);
 			};
 
 			$scope.removeClosed = function(){
 				for(var i= $scope.bugs.length-1; i >= 0; i--)
-					if ($scope.bugs[i].isClosed)
+					if ($scope.bugs[i].isClosed){
+						bugStorage.remove($scope.bugs[i]);
 						$scope.bugs.splice(i,1);
+					}
 			};
 
-			$scope.getClosedCount = function(){
-				
-			};
 
 		});
 
@@ -200,11 +268,9 @@
 				<li 
 					ng-repeat="bug in (bugs | filter:searchBug | orderBy:sortBugOrder:sortBugDescending)" 
 					ng-click="toggle(bug)" 
-					ng-class="{closed : bug.isClosed}">
-
-					<span class="bugname">{{bug.name | trimText}}</span>
-					<span>[{{bug.id}}]</span>
-					<div class="datetime"></div>
+					>
+					<span ng-class="{closed : bug.isClosed}" class="bugname">{{bug.name | trimText}}</span>
+					<div class="datetime">{{bug.createdAt | date:'dd-MMM-yyyy hh:mm:ss'}}</div>
 				</li>
 
 				
